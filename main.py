@@ -30,7 +30,7 @@ def rgb_to_hex(red, green, blue):
 @st.cache_data
 def get_data(img):
     scaled_down = img.copy()
-    scaled_down.thumbnail((160, 160))
+    scaled_down.thumbnail((150, 150))
 
     df = np.array(scaled_down).reshape(-1, 3)
     return df
