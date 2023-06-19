@@ -2,5 +2,4 @@ numpy
 plotly
 streamlit
 scikit-learn
-pyperclip
 streamlit_lottie

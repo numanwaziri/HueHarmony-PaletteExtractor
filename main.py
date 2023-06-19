@@ -136,8 +136,9 @@ def main():
             text-align: center;
             background-color: #ff6f61;
             color: white;
-            padding: 13px;
+            padding: 20px;
             border-radius: 7px;
+            box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
         }
         </style>
         """,
@@ -146,7 +147,7 @@ def main():
 
     st.markdown("<h1 class='rounded-heading'>HueHarmony</h1>", unsafe_allow_html=True)
 
-    st.markdown("<h3 style='text-align: center; color: #ff6f61; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.07);'>🎨 Image Palette Extractor</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #ff6f61; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.07);'>🎨 Image Palette Extractor</h3><br>", unsafe_allow_html=True)
 
 
     with st.expander("⚙️ Options", expanded=False):
@@ -206,7 +207,7 @@ def main():
         st.plotly_chart(stacked_bar_chart(sorted_colors), use_container_width=True)
 
 
-        st.download_button('Download colors', "\n".join(sorted_colors),use_container_width=True,file_name='colors.txt')
+        st.download_button('Download Palette', "\n".join(sorted_colors),use_container_width=True,file_name='colors.txt')
 
 
 
@@ -303,12 +304,12 @@ def main():
                     """
                         )
             with visualization:
-                st.markdown("Explore the color space for the image and ML clustering using <span style='color: #ff6f61;'>**interactive**</span> plots below",
+                st.markdown("Explore the behaviour of the clustering algorithm on the RGB color space with <span style='color: #ff6f61;'>**interactive**</span> plots below",
                             unsafe_allow_html=True
                             )
                 col1, col2 = st.columns(2)
 
-                col1.markdown("<h6 style='text-align: center;'>Color Space</h6>",
+                col1.markdown("<div style='text-align: center;'>RGB Color Space</div>",
                             unsafe_allow_html=True)
 
                 # col1.write("Color Space")
@@ -317,7 +318,7 @@ def main():
 
                 # col2.write(f"Clustering with {model_name} Model")
 
-                col2.markdown(f"<h6 style='text-align: center;'>Clustering with {model_name} Model</h6>",
+                col2.markdown(f"<div style='text-align: center;'>Clustering with {model_name} Model</div>",
                               unsafe_allow_html=True)
                 col2.plotly_chart(create_scatter_plot(data, colors=colors), use_container_width=True)
 
