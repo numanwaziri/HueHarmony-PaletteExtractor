@@ -7,7 +7,7 @@ from io import BytesIO
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 import colorsys
-
+import pyperclip
 def sort_colors(colors):
     # Convert colors to HSL and sort based on hue
     sorted_colors = sorted(colors,
@@ -132,7 +132,7 @@ def main():
             text-align: center;
             background-color: #ff6f61;
             color: white;
-            padding: 12px;
+            padding: 13px;
             border-radius: 7px;
         }
         </style>
@@ -142,7 +142,12 @@ def main():
 
     st.markdown("<h1 class='rounded-heading'>HueHarmony</h1>", unsafe_allow_html=True)
 
-    st.markdown("<h3 style='text-align: center; color: #ff6f61;'>Image Palette Extractor</h3>", unsafe_allow_html=True)
+
+
+
+
+
+    st.markdown("<h3 style='text-align: center; color: #ff6f61; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.07);'>🎨 Image Palette Extractor</h3>", unsafe_allow_html=True)
 
 
     with st.expander("⚙️ Options", expanded=False):
@@ -173,7 +178,11 @@ def main():
                 st.error("The URL is not valid.")
 
     if img is not None:
+
         st.image(img, use_column_width=True)
+
+
+
 
         data = get_data(img)
         clusters, colors = get_clusters(data, model_name, palette_size)
@@ -181,37 +190,105 @@ def main():
         sorted_colors = sort_colors([rgb_to_hex(*i) for i in clusters])
         st.plotly_chart(stacked_bar_chart(sorted_colors), use_container_width=True)
 
+
+
+
+        if st.button("Copy to Clipboard",use_container_width=True):
+            pyperclip.copy(", ".join(sorted_colors))
+            st.success("Copied to clipboard!")
+
+
+
+
         with st.expander("🤖  Details for Machine Learning Enthusiasts ", expanded=True):
 
 
             visualization, code = st.tabs(["Visualization", "Code"])
 
             with code:
-                st.write("A simple implementation of KMeans clustering algorithm from scratch for this particular use case only to find clusters in data (not predict clusters for new data)")
+                st.write("Implemntation of KMeans Clustering Algorithm from Scratch in Python")
                 st.code(f"""
-                def kmeans(data, n_clusters, max_iterations=100, tolerance=1e-4):
-                    # Initialize centroids randomly
-                    np.random.seed(42)
-                    centroids = data[np.random.choice(len(data), n_clusters, replace=False)]
-                
-                    for _ in range(max_iterations):
-                        # Calculate distances between data points and centroids
-                        distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
-                
-                        # Assign data points to the nearest centroid
-                        labels = np.argmin(distances, axis=0)
-                
-                        # Update centroids
-                        new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(n_clusters)])
-                
-                        max_change = np.max(np.abs(centroids - new_centroids))
-                
-                        if max_change < tolerance:
-                            break
-                
-                        centroids = new_centroids
-                
-                    return centroids, labels
+                class KMeans:
+    \"""
+    K-means clustering algorithm.
+
+    Parameters:
+        n_clusters (int): The number of clusters to form.
+        max_iterations (int, optional): The maximum number of iterations to perform. Defaults to 100.
+        tolerance (float, optional): The tolerance for convergence. Defaults to 1e-4.
+
+    Attributes:
+        centroids (ndarray): The final centroids after training.
+        labels (ndarray): The labels assigned to each data point after training.
+
+    Methods:
+        fit(data): Fit the K-means model to the input data.
+        predict(data): Predict the labels for new data points.
+
+    \"""
+
+    def __init__(self, n_clusters, max_iterations=100, tolerance=1e-4):
+        if not isinstance(n_clusters, int) or n_clusters <= 0:
+            raise ValueError("The number of clusters (n_clusters) must be a positive integer.")
+        if not isinstance(max_iterations, int) or max_iterations <= 0:
+            raise ValueError("The maximum number of iterations (max_iterations) must be a positive integer.")
+        if not isinstance(tolerance, float) or tolerance <= 0:
+            raise ValueError("The tolerance (tolerance) must be a positive float.")
+
+        self.n_clusters = n_clusters
+        self.max_iterations = max_iterations
+        self.tolerance = tolerance
+
+    def fit(self, data):
+        \"""
+        Fit the K-means model to the input data.
+
+        Parameters:
+            data (array-like): The input data.
+
+        \"""
+        data = np.array(data)
+
+        if data.ndim != 2:
+            raise ValueError("The input data must be two-dimensional.")
+
+        np.random.seed(42)
+        centroids = data[np.random.choice(len(data), self.n_clusters, replace=False)]
+
+        for _ in range(self.max_iterations):
+            distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
+            labels = np.argmin(distances, axis=0)
+            new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(self.n_clusters)])
+
+            max_change = np.max(np.abs(centroids - new_centroids))
+
+            if max_change < self.tolerance:
+                break
+
+            centroids = new_centroids
+
+        self.centroids = centroids
+        self.labels = labels
+
+    def predict(self, data):
+        \"""
+        Predict the labels for new data points.
+
+        Parameters:
+            data (array-like): The new data points to predict labels for.
+
+        Returns:
+            ndarray: The predicted labels for the new data points.
+
+        \"""
+        data = np.array(data)
+
+        if data.ndim != 2:
+            raise ValueError("The input data must be two-dimensional.")
+
+        distances = np.sqrt(((data - self.centroids[:, np.newaxis])**2).sum(axis=2))
+        labels = np.argmin(distances, axis=0)
+        return labels
                     """
                         )
             with visualization:
