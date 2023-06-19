@@ -7,7 +7,11 @@ from io import BytesIO
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 import colorsys
-import pyperclip
+from streamlit_lottie import st_lottie
+import json
+
+
+
 def sort_colors(colors):
     # Convert colors to HSL and sort based on hue
     sorted_colors = sorted(colors,
@@ -142,11 +146,6 @@ def main():
 
     st.markdown("<h1 class='rounded-heading'>HueHarmony</h1>", unsafe_allow_html=True)
 
-
-
-
-
-
     st.markdown("<h3 style='text-align: center; color: #ff6f61; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.07);'>🎨 Image Palette Extractor</h3>", unsafe_allow_html=True)
 
 
@@ -177,6 +176,22 @@ def main():
             except:
                 st.error("The URL is not valid.")
 
+    if img is None:
+
+        path = "./Assets/lotte.json"
+        with open(path, "r") as file:
+            url = json.load(file)
+
+        st_lottie(url,
+                  reverse=True,
+                  height=360,
+
+                  speed=1,
+                  loop=True,
+                  quality='high',
+                  key='colors'
+                  )
+
     if img is not None:
 
         st.image(img, use_column_width=True)
@@ -191,11 +206,7 @@ def main():
         st.plotly_chart(stacked_bar_chart(sorted_colors), use_container_width=True)
 
 
-
-
-        if st.button("Copy to Clipboard",use_container_width=True):
-            pyperclip.copy(", ".join(sorted_colors))
-            st.success("Copied to clipboard!")
+        st.download_button('Download colors', "\n".join(sorted_colors),use_container_width=True,file_name='colors.txt')
 
 
 
