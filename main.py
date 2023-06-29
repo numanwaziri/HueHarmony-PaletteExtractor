@@ -90,7 +90,7 @@ def stacked_bar_chart(colors):
     return fig
 
 
-def create_scatter_plot(data, colors):
+def create_scatter_plot(data, colors,title):
     red, green, blue = data.T
     layout = go.Layout(margin=dict(l=0, r=0, b=0, t=0))
     fig = go.Figure(layout=layout, data=go.Scatter3d(
@@ -120,12 +120,34 @@ def create_scatter_plot(data, colors):
     camera = dict(
         eye=dict(x=2, y=-1, z=0.3)
     )
-    fig.update_layout(scene_camera=camera)
+    fig.update_layout(scene_camera=camera
+                      )
+
+    fig.update_layout(
+        title=dict(
+            text=title,
+            x=0.5,
+            xanchor='center',
+            yanchor='top',
+            font=dict(
+                family='Arial',
+                size=14,
+                color="grey"
+            ),
+            xref='paper',
+            yref='paper',
+        ),
+        title_x=0.5,
+        title_y=0.97
+    )
 
     return fig
 
 
 def main():
+    st.set_page_config(
+        page_title="HueHarmony",
+    )
 
     img = None
 
@@ -186,7 +208,6 @@ def main():
         st_lottie(url,
                   reverse=True,
                   height=360,
-
                   speed=1,
                   loop=True,
                   quality='high',
@@ -197,19 +218,12 @@ def main():
 
         st.image(img, use_column_width=True)
 
-
-
-
         data = get_data(img)
         clusters, colors = get_clusters(data, model_name, palette_size)
-
         sorted_colors = sort_colors([rgb_to_hex(*i) for i in clusters])
         st.plotly_chart(stacked_bar_chart(sorted_colors), use_container_width=True)
 
-
         st.download_button('Download Palette', "\n".join(sorted_colors),use_container_width=True,file_name='colors.txt')
-
-
 
 
         with st.expander("🤖  Details for Machine Learning Enthusiasts ", expanded=True):
@@ -217,110 +231,104 @@ def main():
 
             visualization, code = st.tabs(["Visualization", "Code"])
 
-            with code:
-                st.write("Implemntation of KMeans Clustering Algorithm from Scratch in Python")
-                st.code(f"""
-                class KMeans:
-    \"""
-    K-means clustering algorithm.
 
-    Parameters:
-        n_clusters (int): The number of clusters to form.
-        max_iterations (int, optional): The maximum number of iterations to perform. Defaults to 100.
-        tolerance (float, optional): The tolerance for convergence. Defaults to 1e-4.
-
-    Attributes:
-        centroids (ndarray): The final centroids after training.
-        labels (ndarray): The labels assigned to each data point after training.
-
-    Methods:
-        fit(data): Fit the K-means model to the input data.
-        predict(data): Predict the labels for new data points.
-
-    \"""
-
-    def __init__(self, n_clusters, max_iterations=100, tolerance=1e-4):
-        if not isinstance(n_clusters, int) or n_clusters <= 0:
-            raise ValueError("The number of clusters (n_clusters) must be a positive integer.")
-        if not isinstance(max_iterations, int) or max_iterations <= 0:
-            raise ValueError("The maximum number of iterations (max_iterations) must be a positive integer.")
-        if not isinstance(tolerance, float) or tolerance <= 0:
-            raise ValueError("The tolerance (tolerance) must be a positive float.")
-
-        self.n_clusters = n_clusters
-        self.max_iterations = max_iterations
-        self.tolerance = tolerance
-
-    def fit(self, data):
-        \"""
-        Fit the K-means model to the input data.
-
-        Parameters:
-            data (array-like): The input data.
-
-        \"""
-        data = np.array(data)
-
-        if data.ndim != 2:
-            raise ValueError("The input data must be two-dimensional.")
-
-        np.random.seed(42)
-        centroids = data[np.random.choice(len(data), self.n_clusters, replace=False)]
-
-        for _ in range(self.max_iterations):
-            distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
-            labels = np.argmin(distances, axis=0)
-            new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(self.n_clusters)])
-
-            max_change = np.max(np.abs(centroids - new_centroids))
-
-            if max_change < self.tolerance:
-                break
-
-            centroids = new_centroids
-
-        self.centroids = centroids
-        self.labels = labels
-
-    def predict(self, data):
-        \"""
-        Predict the labels for new data points.
-
-        Parameters:
-            data (array-like): The new data points to predict labels for.
-
-        Returns:
-            ndarray: The predicted labels for the new data points.
-
-        \"""
-        data = np.array(data)
-
-        if data.ndim != 2:
-            raise ValueError("The input data must be two-dimensional.")
-
-        distances = np.sqrt(((data - self.centroids[:, np.newaxis])**2).sum(axis=2))
-        labels = np.argmin(distances, axis=0)
-        return labels
-                    """
-                        )
             with visualization:
                 st.markdown("Explore the behaviour of the clustering algorithm on the RGB color space with <span style='color: #ff6f61;'>**interactive**</span> plots below",
                             unsafe_allow_html=True
                             )
                 col1, col2 = st.columns(2)
 
-                col1.markdown("<div style='text-align: center;'>RGB Color Space</div>",
-                            unsafe_allow_html=True)
-
-                # col1.write("Color Space")
-                col1.plotly_chart(create_scatter_plot(data, colors=data),
+                col1.plotly_chart(create_scatter_plot(data, colors=data,title = "RGB Color Space"),
                                   use_container_width=True)
 
-                # col2.write(f"Clustering with {model_name} Model")
+                col2.plotly_chart(create_scatter_plot(data, colors=colors, title = f'Clustering with {model_name} Model'), use_container_width=True)
 
-                col2.markdown(f"<div style='text-align: center;'>Clustering with {model_name} Model</div>",
-                              unsafe_allow_html=True)
-                col2.plotly_chart(create_scatter_plot(data, colors=colors), use_container_width=True)
+                with code:
+                    st.write("Implemntation of KMeans Clustering Algorithm from Scratch in Python")
+                    st.code(f"""
+                        class KMeans:
+            \"""
+            K-means clustering algorithm.
+
+            Parameters:
+                n_clusters (int): The number of clusters to form.
+                max_iterations (int, optional): The maximum number of iterations to perform. Defaults to 100.
+                tolerance (float, optional): The tolerance for convergence. Defaults to 1e-4.
+
+            Attributes:
+                centroids (ndarray): The final centroids after training.
+                labels (ndarray): The labels assigned to each data point after training.
+
+            Methods:
+                fit(data): Fit the K-means model to the input data.
+                predict(data): Predict the labels for new data points.
+
+            \"""
+
+            def __init__(self, n_clusters, max_iterations=100, tolerance=1e-4):
+                if not isinstance(n_clusters, int) or n_clusters <= 0:
+                    raise ValueError("The number of clusters (n_clusters) must be a positive integer.")
+                if not isinstance(max_iterations, int) or max_iterations <= 0:
+                    raise ValueError("The maximum number of iterations (max_iterations) must be a positive integer.")
+                if not isinstance(tolerance, float) or tolerance <= 0:
+                    raise ValueError("The tolerance (tolerance) must be a positive float.")
+
+                self.n_clusters = n_clusters
+                self.max_iterations = max_iterations
+                self.tolerance = tolerance
+
+            def fit(self, data):
+                \"""
+                Fit the K-means model to the input data.
+
+                Parameters:
+                    data (array-like): The input data.
+
+                \"""
+                data = np.array(data)
+
+                if data.ndim != 2:
+                    raise ValueError("The input data must be two-dimensional.")
+
+                np.random.seed(42)
+                centroids = data[np.random.choice(len(data), self.n_clusters, replace=False)]
+
+                for _ in range(self.max_iterations):
+                    distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
+                    labels = np.argmin(distances, axis=0)
+                    new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(self.n_clusters)])
+
+                    max_change = np.max(np.abs(centroids - new_centroids))
+
+                    if max_change < self.tolerance:
+                        break
+
+                    centroids = new_centroids
+
+                self.centroids = centroids
+                self.labels = labels
+
+            def predict(self, data):
+                \"""
+                Predict the labels for new data points.
+
+                Parameters:
+                    data (array-like): The new data points to predict labels for.
+
+                Returns:
+                    ndarray: The predicted labels for the new data points.
+
+                \"""
+                data = np.array(data)
+
+                if data.ndim != 2:
+                    raise ValueError("The input data must be two-dimensional.")
+
+                distances = np.sqrt(((data - self.centroids[:, np.newaxis])**2).sum(axis=2))
+                labels = np.argmin(distances, axis=0)
+                return labels
+                            """
+                            )
 
 
 if __name__ == '__main__':
