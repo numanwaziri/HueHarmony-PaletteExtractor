@@ -1,3 +1,4 @@
+import math
 import streamlit as st
 import plotly.graph_objects as go
 from PIL import Image
@@ -9,13 +10,24 @@ from sklearn.mixture import GaussianMixture
 import colorsys
 from streamlit_lottie import st_lottie
 import json
-
-
-
+st.set_page_config(
+    page_title="HueHarmony",
+    page_icon="🎨",
+    layout="wide",
+)
+def step (r,g,b, repetitions=1):
+    lum = math.sqrt( .241 * r + .691 * g + .068 * b )
+    h, s, v = colorsys.rgb_to_hsv(r,g,b)
+    h2 = int(h * repetitions)
+    lum2 = int(lum * repetitions)
+    v2 = int(v * repetitions)
+    if h2 % 2 == 1:
+        v2 = repetitions - v2
+        lum = repetitions - lum
+    return (h2, lum, v2)
 def sort_colors(colors):
-    # Convert colors to HSL and sort based on hue
-    sorted_colors = sorted(colors,
-                           key=lambda c: colorsys.rgb_to_hls(*tuple(int(c[i:i + 2], 16) / 255 for i in (1, 3, 5)))[0])
+    # Convert hex colors to RGB and sort based on the step function
+    sorted_colors = sorted(colors, key=lambda c: step(*tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)),repetitions=8))
     return sorted_colors
 
 
@@ -145,39 +157,43 @@ def create_scatter_plot(data, colors,title):
 
 
 def main():
-    st.set_page_config(
-        page_title="HueHarmony",
-    )
-
     img = None
+
 
     st.markdown(
         """
         <style>
         .rounded-heading {
             text-align: center;
-            background-color: #ff6f61;
+            background: linear-gradient(to right, #ff6f61, #e23e57);
             color: white;
-            padding: 20px;
+            padding: 23px;
             border-radius: 7px;
             box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .rounded-heading:hover {
+            background: linear-gradient(to left, #ff6f61, #e23e57);
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
+
     st.markdown("<h1 class='rounded-heading'>HueHarmony</h1>", unsafe_allow_html=True)
 
     st.markdown("<h3 style='text-align: center; color: #ff6f61; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.07);'>🎨 Image Palette Extractor</h3><br>", unsafe_allow_html=True)
 
 
-    with st.expander("⚙️ Options", expanded=False):
+    with st.expander("⚙️ Options", expanded=True):
         col1, col2 = st.columns(2)
-        palette_size = int(col1.number_input("Palette Size", min_value=1, max_value=20, value=6, step=1,
+        palette_size = int(col1.number_input("Palette Size", min_value=1, max_value=24, value=8, step=1,
                                              help="Number of colors to extract from the Image"))
         model_name = col2.selectbox("Machine Learning Model", ["KMeans", "Gaussian Mixtures"],
                                     help="Machine Learning model to use for Clustering the pixel RGB values")
+
+
 
     upload_tab, url_tab = st.tabs(["Upload", "Image URL"])
     with upload_tab:
@@ -215,8 +231,24 @@ def main():
                   )
 
     if img is not None:
+        if img.size[1]>200:
 
-        st.image(img, use_column_width=True)
+            height = 200  # Set your desired height in pixels
+
+            # Resize the image while maintaining the aspect ratio
+            width_percent = (height / float(img.size[1]))
+            width_size = int((float(img.size[0]) * float(width_percent)))
+            resized_image = img.resize((width_size, height), Image.Resampling.LANCZOS)
+
+        else:
+            resized_image = img
+
+
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            st.image(resized_image)
+
+
 
         data = get_data(img)
         clusters, colors = get_clusters(data, model_name, palette_size)
