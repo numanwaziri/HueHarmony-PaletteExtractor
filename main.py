@@ -13,7 +13,6 @@ import json
 st.set_page_config(
     page_title="HueHarmony",
     page_icon="🎨",
-    layout="wide",
 )
 def step (r,g,b, repetitions=1):
     lum = math.sqrt( .241 * r + .691 * g + .068 * b )
@@ -88,7 +87,6 @@ def stacked_bar_chart(colors):
 
     # Create the layout
     layout = go.Layout(
-
         height=80,
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0.59, 1.4]),
