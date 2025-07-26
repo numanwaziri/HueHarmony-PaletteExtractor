@@ -179,10 +179,22 @@ def main():
     )
 
 
-    st.markdown("<h1 class='rounded-heading'>HueHarmony</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='rounded-heading' style='color: white'>HueHarmony</h1>", unsafe_allow_html=True)
 
-    st.markdown("<h3 style='text-align: center; color: #ff6f61; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.07);'>🎨 Image Palette Extractor</h3><br>", unsafe_allow_html=True)
-
+    st.markdown("""
+        <div style="
+            text-align: center;
+            color: #ff6f61;
+            font-size: 28px;
+            font-weight: 600;
+            padding: 10px 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ff6f61;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
+        ">
+            🎨 Image Palette Extractor<br><span style="font-size: 18px; font-weight: 400; color:grey;">by Ahmad Noman Waziri</span>
+        </div>
+    """, unsafe_allow_html=True)
 
     with st.expander("⚙️ Options", expanded=True):
         col1, col2 = st.columns(2)
@@ -253,112 +265,70 @@ def main():
         sorted_colors = sort_colors([rgb_to_hex(*i) for i in clusters])
         st.plotly_chart(stacked_bar_chart(sorted_colors), use_container_width=True)
 
-        st.download_button('Download Palette', "\n".join(sorted_colors),use_container_width=True,file_name='colors.txt')
+        st.download_button('Download Palette', "\n".join(sorted_colors),use_container_width=True,file_name='colors.txt',on_click ='ignore')
 
 
         with st.expander("🤖  Details for Machine Learning Enthusiasts ", expanded=True):
 
 
-            visualization, code = st.tabs(["Visualization", "Code"])
+            visualization, code = st.tabs(["Visualization", "Explaination"])
 
 
             with visualization:
-                st.markdown("Explore the behaviour of the clustering algorithm on the RGB color space with <span style='color: #ff6f61;'>**interactive**</span> plots below",
+                st.markdown(f"Discover how the {model_name} algorithm clusters colors in RGB space through the <span style='color: #ff6f61;'>**interactive**</span> plots below.",
                             unsafe_allow_html=True
                             )
                 col1, col2 = st.columns(2)
 
-                col1.plotly_chart(create_scatter_plot(data, colors=data,title = "RGB Color Space"),
+                col1.plotly_chart(create_scatter_plot(data, colors=data,title = "Original RGB Color Space"),
                                   use_container_width=True)
 
                 col2.plotly_chart(create_scatter_plot(data, colors=colors, title = f'Clustering with {model_name} Model'), use_container_width=True)
 
                 with code:
-                    st.write("Implemntation of KMeans Clustering Algorithm from Scratch in Python")
-                    st.code(f"""
-                        class KMeans:
-            \"""
-            K-means clustering algorithm.
+                    st.markdown(f"### 🧠 How {model_name} Picks the Main Colors")
+                    if model_name == "KMeans":
+                        st.markdown("""
+                    Every image is made of thousands of tiny dots called **pixels**, and each pixel has a color made from red, green, and blue (RGB) values.
 
-            Parameters:
-                n_clusters (int): The number of clusters to form.
-                max_iterations (int, optional): The maximum number of iterations to perform. Defaults to 100.
-                tolerance (float, optional): The tolerance for convergence. Defaults to 1e-4.
+                    The **KMeans algorithm** helps reduce all those colors into a smaller, more meaningful set, like a color palette. Here’s how it works:
 
-            Attributes:
-                centroids (ndarray): The final centroids after training.
-                labels (ndarray): The labels assigned to each data point after training.
+                    **1. Pick starting colors**  
+                    It randomly selects *n* colors from your image as starting points (called “cluster centers”). You choose how many (e.g. 5 colors).
 
-            Methods:
-                fit(data): Fit the K-means model to the input data.
-                predict(data): Predict the labels for new data points.
+                    **2. Group similar colors together**  
+                    Each pixel is assigned to the closest color center based on how similar their RGB values are.
 
-            \"""
+                    **3. Update the colors**  
+                    For each group, it calculates the average color of the pixels assigned to that group. That becomes the new center.
 
-            def __init__(self, n_clusters, max_iterations=100, tolerance=1e-4):
-                if not isinstance(n_clusters, int) or n_clusters <= 0:
-                    raise ValueError("The number of clusters (n_clusters) must be a positive integer.")
-                if not isinstance(max_iterations, int) or max_iterations <= 0:
-                    raise ValueError("The maximum number of iterations (max_iterations) must be a positive integer.")
-                if not isinstance(tolerance, float) or tolerance <= 0:
-                    raise ValueError("The tolerance (tolerance) must be a positive float.")
+                    **4. Repeat until stable**  
+                    Steps 2 and 3 repeat until the colors stop changing much. This means the groups are stable.
 
-                self.n_clusters = n_clusters
-                self.max_iterations = max_iterations
-                self.tolerance = tolerance
+                    ---
 
-            def fit(self, data):
-                \"""
-                Fit the K-means model to the input data.
+                    ✅ The final group centers become your image’s **main colors**, giving you a clean, simplified color palette.
+                    """)
+                    else:
+                        st.markdown("""
+                        Your image is made up of tiny dots called **pixels**, and each pixel has a color made from red, green, and blue (RGB) values.
 
-                Parameters:
-                    data (array-like): The input data.
+                        GMM helps find the main colors by treating pixel colors as data points and grouping them based on patterns. Here's how it works:
 
-                \"""
-                data = np.array(data)
+                        **1. Guess some color groups**  
+                        GMM starts by assuming n color groups. Each group is shaped like a soft blob (called a "Gaussian") that can stretch in different directions.
 
-                if data.ndim != 2:
-                    raise ValueError("The input data must be two-dimensional.")
+                        **2. Measure how likely each pixel fits in each group**  
+                        Instead of assigning pixels to just one group, GMM calculates how likely each pixel belongs to each color group.
 
-                np.random.seed(42)
-                centroids = data[np.random.choice(len(data), self.n_clusters, replace=False)]
+                        **3. Adjust the color groups**  
+                        Based on those likelihoods, GMM updates the position, shape, and size of each group so they better match the pixel colors.
 
-                for _ in range(self.max_iterations):
-                    distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
-                    labels = np.argmin(distances, axis=0)
-                    new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(self.n_clusters)])
+                        **4. Repeat until it fits well**  
+                        This process is repeated, measuring likelihoods and updating groups, until the model finds a good fit for all the pixels.
 
-                    max_change = np.max(np.abs(centroids - new_centroids))
-
-                    if max_change < self.tolerance:
-                        break
-
-                    centroids = new_centroids
-
-                self.centroids = centroids
-                self.labels = labels
-
-            def predict(self, data):
-                \"""
-                Predict the labels for new data points.
-
-                Parameters:
-                    data (array-like): The new data points to predict labels for.
-
-                Returns:
-                    ndarray: The predicted labels for the new data points.
-
-                \"""
-                data = np.array(data)
-
-                if data.ndim != 2:
-                    raise ValueError("The input data must be two-dimensional.")
-
-                distances = np.sqrt(((data - self.centroids[:, np.newaxis])**2).sum(axis=2))
-                labels = np.argmin(distances, axis=0)
-                return labels
-                            """
-                            )
+                        ✅ The result is a set of smooth color groups that represent the image's main colors, even when colors are blended or gradual.
+                        """)
 
 
 if __name__ == '__main__':
