@@ -286,7 +286,7 @@ def main():
                 col2.plotly_chart(create_scatter_plot(data, colors=colors, title = f'Clustering with {model_name} Model'), use_container_width=True)
 
                 with code:
-                    st.markdown(f"### 🧠 How {model_name} Picks the Main Colors")
+                    st.markdown(f"# How {model_name} Picks the Palette Colors")
                     if model_name == "KMeans":
                         st.markdown("""
                     Every image is made of thousands of tiny dots called **pixels**, and each pixel has a color made from red, green, and blue (RGB) values.
